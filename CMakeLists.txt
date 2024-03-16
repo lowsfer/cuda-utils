@@ -6,23 +6,10 @@ set(CMAKE_CUDA_STANDARD 17)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(CMAKE_CUDA_ARCHITECTURES 75-real 86-real) # 75-virtual
-
-find_program(LSB_RELEASE_EXEC lsb_release)
-execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
-    OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if (${LSB_RELEASE_ID_SHORT} STREQUAL "Gentoo")
-	# make sure boost is compiled with valgrind support before enabling this
-	add_definitions(-DBOOST_USE_VALGRIND)
-endif()
+set(CMAKE_CUDA_ARCHITECTURES 75-real 80-real 86-real 90-real 75-virtual)
 
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR})
 link_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../lib)
-
-# make sure boost is compiled with valgrind support before using this
-# add_definitions(-DBOOST_USE_VALGRIND)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -Wreturn-type -Wall -Wextra -Wno-unknown-pragmas -Werror -Wparentheses")
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
