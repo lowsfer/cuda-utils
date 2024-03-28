@@ -63,7 +63,7 @@ add_library(cuda-utils
     ImageReader.h ImageReader.cpp
     )
 
-add_executable(tests
+add_executable(tests_cuda-utils
     tests/StorageManagerTests.cpp
     tests/CudaMemPoolTests.cpp
     tests/CudaMultiEventTests.cpp
@@ -75,8 +75,8 @@ add_executable(tests
     tests/CudaStreamSharedMutexTest.cu
     tests/kmatTest.cpp)
 
-target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(tests PRIVATE cuda-utils gtest_main gtest cudart pthread turbojpeg jpeg heif exiv2)
+target_include_directories(tests_cuda-utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(tests_cuda-utils PRIVATE cuda-utils gtest_main gtest cudart pthread turbojpeg jpeg heif exiv2)
 
 add_executable(repro repro.cpp repro.cu)
 target_link_libraries(repro PRIVATE cudart pthread)

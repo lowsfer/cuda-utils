@@ -13,7 +13,7 @@
 #include <cassert>
 #include "cpp_utils.h"
 #include <type_traits>
-#include <CudaDaemon.h>
+#include "CudaDaemon.h"
 
 //for IDE parser
 #if defined(Q_CREATOR_RUN) || defined(__CLION_IDE__) || defined (__INTELLISENSE__) || defined(IN_KDEVELOP_PARSER) || defined(__JETBRAINS_IDE__)

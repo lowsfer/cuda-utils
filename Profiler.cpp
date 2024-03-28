@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <mutex>
+#include <algorithm>
 
 namespace cudapp
 {
@@ -15,7 +16,7 @@ Profiler& Profiler::instance() {
 
 Profiler::Trace::Trace(const std::string_view& name) : mName{name}, mStart{std::chrono::steady_clock::now()} {}
 Profiler::Trace::Trace(Trace&& src) : mName{std::move(src.mName)}, mStart{src.mStart}{
-    src.mName = std::string{};
+    src.mName = std::string_view{};
 }
 Profiler::Trace& Profiler::Trace::operator=(Trace&& src){
     this->~Trace();

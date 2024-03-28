@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include <array>
-#include <macros.h>
+#include "macros.h"
 #include <memory>
 
 namespace Exiv2

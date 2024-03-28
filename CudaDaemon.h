@@ -4,8 +4,8 @@
 #include <memory>
 #include <cuda_runtime_api.h>
 #include <thread>
-#include <ConcurrentQueue.h>
-#include <CudaEventPool.h>
+#include "ConcurrentQueue.h"
+#include "CudaEventPool.h"
 
 namespace cudapp
 {
