@@ -1,6 +1,5 @@
 #include "ImageReader.h"
 #include "cpp_utils.h"
-#include <boost/gil/extension/io/jpeg.hpp>
 #include <libheif/heif_cxx.h>
 #include <libheif/heif.h>
 #include <exiv2/exif.hpp>
@@ -9,6 +8,15 @@
 #include <exiv2/exiv2.hpp>
 #include <type_traits>
 #include <variant>
+#include <boost/version.hpp>
+#define BOOST_GIL_JPEG_IS_WORKING (BOOST_VERSION >= 108000)
+#if BOOST_GIL_JPEG_IS_WORKING
+#include <boost/gil/extension/io/jpeg.hpp>
+#else
+namespace cudapp {
+int scanhead (FILE * infile, int * image_width, int * image_height);
+}
+#endif
 
 namespace cudapp
 {
@@ -153,10 +161,18 @@ private:
 		if (mShape.has_value()){
 			return;
 		}
+		auto& shape = const_cast<std::optional<Shape2D>&>(mShape);
+#if BOOST_GIL_JPEG_IS_WORKING
 		namespace gil = boost::gil;
 		const auto backend = gil::read_image_info(mFile.c_str(), gil::jpeg_tag());
-		auto& shape = const_cast<std::optional<Shape2D>&>(mShape);
 		shape = Shape2D{.width = backend._info._width, .height = backend._info._height};
+#else
+		auto const file = fopen(mFile.c_str(), "rb");
+		int width = 0;
+		int height = 0;
+		ASSERT(scanhead(file, &width, &height) != 0);
+		shape = Shape2D{.width = cast32u(width), .height = cast32u(height)};
+#endif
 	}
 	void loadMetaData() const {
 		if (mMetaData.has_value()) {
@@ -277,5 +293,83 @@ Image8U rgbToGray(const Image8UC3& src) {
 	});
 	return dst;
 }
+
+// from http://carnage-melon.tom7.org/stuff/jpegsize.html
+// The author claims: This routine is as public domain as is legally allowed.
+
+/* portions derived from IJG code */
+
+#define readbyte(a,b) do if(((a)=getc((b))) == EOF) return 0; while (0)
+#define readword(a,b) do { int cc_=0,dd_=0; \
+                          if((cc_=getc((b))) == EOF \
+        		  || (dd_=getc((b))) == EOF) return 0; \
+                          (a) = (cc_<<8) + (dd_); \
+                          } while(0)
+
+
+int scanhead (FILE * infile, int * image_width, int * image_height) {
+  int marker=0;
+  int dummy=0;
+  if ( getc(infile) != 0xFF || getc(infile) != 0xD8 )
+    return 0;
+
+  for (;
+      ;) {
+
+
+    int discarded_bytes=0;
+    readbyte(marker,infile);
+    while (marker != 0xFF) {
+      discarded_bytes++;
+      readbyte(marker,infile);
+    }
+    do readbyte(marker,infile); while (marker == 0xFF);
+
+    if (discarded_bytes != 0) return 0;
+   
+    switch (marker) {
+    case 0xC0:
+    case 0xC1:
+    case 0xC2:
+    case 0xC3:
+    case 0xC5:
+    case 0xC6:
+    case 0xC7:
+    case 0xC9:
+    case 0xCA:
+    case 0xCB:
+    case 0xCD:
+    case 0xCE:
+    case 0xCF: {
+      readword(dummy,infile);	/* usual parameter length count */
+      readbyte(dummy,infile);
+      readword((*image_height),infile);
+      readword((*image_width),infile);
+      readbyte(dummy,infile);
+
+      return 1;
+      break;
+      }
+    case 0xDA:
+    case 0xD9:
+      return 0;
+    default: {
+	int length;
+	
+	readword(length,infile);
+
+	if (length < 2)
+	  return 0;
+	length -= 2;
+	while (length > 0) {
+	  readbyte(dummy, infile);
+	  length--;
+	}
+      }
+      break;
+    }
+  }
+}
+
 
 } // namespace cudapp

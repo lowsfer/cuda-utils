@@ -8,11 +8,17 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CMAKE_CUDA_ARCHITECTURES 75-real 80-real 86-real 90-real 75-virtual)
 
+find_package(Boost REQUIRED COMPONENTS fiber)
+
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR})
 link_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../lib)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -Wreturn-type -Wall -Wextra -Wno-unknown-pragmas -Werror -Wparentheses")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -pthread -Wfatal-errors -Wreturn-type -Wall -Wextra -Wno-unknown-pragmas")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo -keep --expt-relaxed-constexpr") #-res-usage
+set(CUDA_PTXAS_FLAGS_RELEASE "${CUDA_PTXAS_FLAGS_RELEASE} -warn-lmem-usage -warn-spills -Werror") # -v
+set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} --use_fast_math -DNDEBUG -Xptxas='${CUDA_PTXAS_FLAGS_RELEASE}'")
 
 # Defined in StorageObjects.h
 # add_definitions("-DENABLE_BLOCK_LINEAR_STORAGE=1")

@@ -25,8 +25,13 @@ public:
         using Result = std::result_of_t<std::decay_t<Fn>(std::decay_t<Args>...)>;
         boost::fibers::packaged_task<Result(std::decay_t<Args>...)> pt{std::forward<Fn>(fn)};
         boost::fibers::future<Result> f = pt.get_future();
+#if BOOST_FIBER_SUPPORTS_CONST_PROP
         boost::intrusive_ptr<boost::fibers::context> ctx = boost::fibers::make_worker_context_with_properties(boost::fibers::launch::post, new FiberPriorityProp(priority), StackAllocator{mDefaultStackSize}, std::move(pt), std::forward<Args>(args)...);
         assert(ctx->get_properties() != nullptr);
+#else
+        unused(priority);
+        boost::intrusive_ptr<boost::fibers::context> ctx = boost::fibers::make_worker_context(boost::fibers::launch::post, StackAllocator{mDefaultStackSize}, std::move(pt), std::forward<Args>(args)...);
+#endif
         mSchedAlgoGroup->post(ctx.get());
         return f;
     }

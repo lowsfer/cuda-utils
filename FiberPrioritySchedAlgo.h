@@ -14,6 +14,9 @@
 #include "GenericSemaphore.h"
 #include <vector>
 #include <shared_mutex>
+#include <boost/version.hpp>
+
+#define BOOST_FIBER_SUPPORTS_CONST_PROP (BOOST_VERSION >= 107800)
 
 namespace cudapp
 {
@@ -30,10 +33,15 @@ public:
     const int32_t priority;
 
     static int32_t getPriority(boost::fibers::context* ctx) {
+#if BOOST_FIBER_SUPPORTS_CONST_PROP
 #ifdef NDEBUG
         return static_cast<FiberPriorityProp*>(ctx->get_properties())->priority;
 #else
         return dynamic_cast<FiberPriorityProp*>(ctx->get_properties())->priority;
+#endif
+#else
+        unused(ctx);
+        return 0;
 #endif
     }
 };
