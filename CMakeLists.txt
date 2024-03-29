@@ -84,5 +84,3 @@ add_executable(tests_cuda-utils
 target_include_directories(tests_cuda-utils PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(tests_cuda-utils PRIVATE cuda-utils gtest_main gtest cudart pthread turbojpeg jpeg heif exiv2)
 
-add_executable(repro repro.cpp repro.cu)
-target_link_libraries(repro PRIVATE cudart pthread)
