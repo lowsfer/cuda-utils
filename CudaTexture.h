@@ -109,7 +109,7 @@ inline constexpr cudaTextureDesc createTexDesc(
         {borderColor[0], borderColor[1], borderColor[2], borderColor[3]},
         normalizedCoords,
         {}, {}, {}, {}, {}, {}
-#if CUDART_VERSION >= 11060
+#if CUDART_VERSION >= 12000
         , {}
 #endif
     };
